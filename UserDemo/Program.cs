@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using UserDemo.Core.Interface;
 using UserDemo.Infrastructure.Data;
+using UserDemo.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<UserDemoContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("UserDemo")));
 
+builder.Services.AddScoped<IUserRepository,UserRepository>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -21,9 +25,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.Run();
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+app.MapGet("/users", (IUserRepository userRepository) =>
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+    return userRepository.GetAllUsers();
+});
+
+
+app.Run();
